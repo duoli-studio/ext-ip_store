@@ -1,23 +1,29 @@
-### 加载本扩展
-在 `config/app.php` 的 `providers` 部分加入
+## Ip 库说明
+
+支持的IP类型, mon17是最全面的, 默认是这种类型
+
+
 ```
-Imvkmark\L5Ip\L5SmsServiceProvider::class
+qqwry   :  http://www.cz88.net/
+tiny    :  https://sourceforge.net/projects/tinyipapp/
+taobao  :  淘宝
+sina    :  新浪
+mon17   :  https://www.ipip.net/
 ```
 
-### 生成配置
-- 配置config
-如果是需要强制生成配置, 在后边加入 `--force` 选项
-```
-php artisan vendor:publish --tag=sour-lemon
-```
+## 配置
+本扩展试用于 `poppy/framework` 框架. 添加/更改配置
 
-### 将以及支持的类型填入 `sl-ip.php`
 
-### 使用
 ```
-\App::make('l5.ip')->area($ip);
+// poppy.php
+'extension' => [
+    'ip_store' => [
+        'type' => 'mon17'
+    ]
+]
 ```
 
 ### License
 
-The Laravel plugin is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+The  plugin is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).

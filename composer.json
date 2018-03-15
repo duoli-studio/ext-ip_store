@@ -1,6 +1,7 @@
 {
 	"name": "poppy/ext-ip_store",
 	"description": "Ip convert to area name",
+	"license": "MIT",
 	"authors": [
 		{
 			"name": "Mark Zhao",
