@@ -12,7 +12,7 @@ mon17   :  https://www.ipip.net/
 ```
 
 ## 配置
-本扩展试用于 `poppy/framework` 框架. 添加/更改配置
+本扩展拓展于 `poppy/framework` 框架. 添加/更改配置
 
 
 ```
@@ -22,6 +22,19 @@ mon17   :  https://www.ipip.net/
         'type' => 'mon17'
     ]
 ]
+```
+
+## For Laravel 
+如果 Laravel 中使用, 需要添加 Service Provider 到 app providers 数组
+
+```
+Poppy\Extension\IpStore\ExtensionServiceProvider.php
+```
+
+你可以加入 facade 或者直接使用这个函数
+
+```
+app('poppy.ext.ip_store')->area()
 ```
 
 ### License

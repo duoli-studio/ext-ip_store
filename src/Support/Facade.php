@@ -6,6 +6,6 @@ class Facade extends IlluminateFacade
 {
 	protected static function getFacadeAccessor()
 	{
-		return 'poppy.ext.ip';
+		return 'poppy.ext.ip_store';
 	}
 }

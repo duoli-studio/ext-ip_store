@@ -60,6 +60,6 @@ class IpStoreServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return ['poppy.ext.ip'];
+		return ['poppy.ext.ip_store'];
 	}
 }
