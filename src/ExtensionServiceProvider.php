@@ -14,7 +14,7 @@ use Illuminate\Support\ServiceProvider;
 |
 */
 
-class IpStoreServiceProvider extends ServiceProvider
+class ExtensionServiceProvider extends ServiceProvider
 {
 	/**
 	 * Indicates if loading of the provider is deferred.

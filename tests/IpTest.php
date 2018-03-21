@@ -1,4 +1,4 @@
-<?php namespace Poppy\Tests\Extension\IpStore;
+<?php namespace Poppy\Extension\IpStore\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Poppy\Extension\IpStore\Repositories\Mon17;
