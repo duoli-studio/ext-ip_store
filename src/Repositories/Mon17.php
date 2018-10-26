@@ -2,6 +2,7 @@
 
 use Poppy\Extension\IpStore\Contracts\Ip as IpContract;
 use Poppy\Extension\IpStore\Traits\IpStoreTrait;
+use Poppy\Framework\Exceptions\ApplicationException;
 
 /**
  * 全球 IPv4 地址归属地数据库(17MON.CN 版)
@@ -17,25 +18,21 @@ class Mon17 implements IpContract
 {
 	use IpStoreTrait;
 
-	private $storePath = '';
-	private $ip        = null;
+	private static $ip;
 
-	private $fp     = null;
-	private $offset = null;
-	private $index  = null;
+	private static $fp;
 
-	private $cached = [];
+	private static $offset;
+
+	private static $index;
+
+	private $storePath;
 
 	public function __construct()
 	{
-		$this->storePath = dirname(dirname(__DIR__)) . '/resources/attachment/17monipdb.dat';
+		$this->storePath = \dirname(__DIR__, 2) . '/resources/attachment/17monipdb.datx';
 	}
 
-	/**
-	 * @param $ip
-	 * @return mixed|string
-	 * @throws \Exception
-	 */
 	public function area($ip)
 	{
 		if (empty($ip) === true) {
@@ -45,29 +42,30 @@ class Mon17 implements IpContract
 		$nip   = gethostbyname($ip);
 		$ipdot = explode('.', $nip);
 
-		if ($ipdot[0] < 0 || $ipdot[0] > 255 || count($ipdot) !== 4) {
+		if ($ipdot[0] < 0 || $ipdot[0] > 255 || \count($ipdot) !== 4) {
 			return 'N/A';
 		}
 
-		if (isset($this->cached[$nip]) === true) {
-			return $this->cached[$nip];
-		}
+		if (self::$fp === null) {
+			try {
+				$this->init();
+			} catch (\Exception $e) {
+				return 'N/A';
+			}
 
-		if ($this->fp === null) {
-			$this->init();
 		}
 
 		$nip2 = pack('N', ip2long($nip));
 
-		$tmp_offset = (int) $ipdot[0] * 4;
-		$start      = unpack('Vlen', $this->index[$tmp_offset] . $this->index[$tmp_offset + 1] . $this->index[$tmp_offset + 2] . $this->index[$tmp_offset + 3]);
+		$tmp_offset = ((int) $ipdot[0] * 256 + (int) $ipdot[1]) * 4;
+		$start      = unpack('Vlen', self::$index[$tmp_offset] . self::$index[$tmp_offset + 1] . self::$index[$tmp_offset + 2] . self::$index[$tmp_offset + 3]);
 
 		$index_offset = $index_length = null;
-		$max_comp_len = $this->offset['len'] - 1024 - 4;
-		for ($start = $start['len'] * 8 + 1024; $start < $max_comp_len; $start += 8) {
-			if ($this->index[$start] . $this->index[$start + 1] . $this->index[$start + 2] . $this->index[$start + 3] >= $nip2) {
-				$index_offset = unpack('Vlen', $this->index[$start + 4] . $this->index[$start + 5] . $this->index[$start + 6] . "\x0");
-				$index_length = unpack('Clen', $this->index[$start + 7]);
+		$max_comp_len = self::$offset['len'] - 262144 - 4;
+		for ($start = $start['len'] * 9 + 262144; $start < $max_comp_len; $start += 9) {
+			if (self::$index{$start} . self::$index{$start + 1} . self::$index{$start + 2} . self::$index{$start + 3} >= $nip2) {
+				$index_offset = unpack('Vlen', self::$index{$start + 4} . self::$index{$start + 5} . self::$index{$start + 6} . "\x0");
+				$index_length = unpack('nlen', self::$index{$start + 7} . self::$index{$start + 8});
 
 				break;
 			}
@@ -77,39 +75,39 @@ class Mon17 implements IpContract
 			return 'N/A';
 		}
 
-		fseek($this->fp, $this->offset['len'] + $index_offset['len'] - 1024);
+		fseek(self::$fp, self::$offset['len'] + $index_offset['len'] - 262144);
 
-		$this->cached[$nip] = explode("\t", fread($this->fp, $index_length['len']));
-
-		return implode(' ', $this->cached[$nip]);
+		return fread(self::$fp, $index_length['len']);
 	}
 
 	/**
-	 * @throws \Exception
+	 * @throws ApplicationException
 	 */
 	private function init()
 	{
-		if ($this->fp === null) {
-			$this->ip = new self();
+		if (self::$fp === null) {
+			self::$ip = new self();
 
-			$this->fp = fopen($this->storePath, 'rb');
-			if ($this->fp === false) {
-				throw new \Exception('Invalid 17monipdb.dat file!');
+			self::$fp = fopen($this->storePath, 'rb');
+			if (self::$fp === false) {
+				throw new ApplicationException('Invalid 17monipdb.datx file!');
 			}
 
-			$this->offset = unpack('Nlen', fread($this->fp, 4));
-			if ($this->offset['len'] < 4) {
-				throw new \Exception('Invalid 17monipdb.dat file!');
+			self::$offset = unpack('Nlen', fread(self::$fp, 4));
+			if (self::$offset['len'] < 4) {
+				throw new ApplicationException('Invalid 17monipdb.datx file!');
 			}
 
-			$this->index = fread($this->fp, $this->offset['len'] - 4);
+			self::$index = fread(self::$fp, self::$offset['len'] - 4);
 		}
 	}
 
 	public function __destruct()
 	{
-		if ($this->fp !== null) {
-			fclose($this->fp);
+		if (self::$fp !== null) {
+			fclose(self::$fp);
+
+			self::$fp = null;
 		}
 	}
 }
